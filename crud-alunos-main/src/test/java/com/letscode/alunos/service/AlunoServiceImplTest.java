@@ -12,12 +12,14 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Arrays;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 
 @ExtendWith(MockitoExtension.class)
@@ -95,7 +97,7 @@ class AlunoServiceImplTest {
     @DisplayName("Deve retornar uma lista de alunos")
     void deveRetornarUmaListaDeAlunos() {
         //Mockar
-        List<Aluno> alunos = Arrays.asList(aluno);
+        List<Aluno> alunos = Collections.singletonList(aluno);
 
         Mockito.when(alunoRepository.findAll()).thenReturn(alunos);
 
@@ -109,6 +111,43 @@ class AlunoServiceImplTest {
 //        Assertions.assertEquals(1, resultado.size());
 //        Assertions.assertEquals(alunos, resultado);
 //        Assertions.assertEquals("Aluno Teste", resultado.get(0).getNome());
+    }
+
+    @Test
+    @DisplayName("Deve deletar um aluno")
+    void deveDeletarAluno() throws Exception {
+        Mockito.when(alunoRepository.findById(anyLong())).thenReturn(Optional.of(aluno));
+        Mockito.doNothing().when(alunoRepository).deleteById(anyLong());
+
+        var resultado = alunoService.delete(aluno.getId());
+
+        assertEquals("Aluno deletado", resultado);
+    }
+
+    @Test
+    @DisplayName("Deve apresentar erro quando não encontrado para exclusão")
+    void deveApresentarErroQuandoNaoEncontradoParaExcusao(){
+        Exception exception = Assertions.assertThrows(Exception.class, () -> alunoService.delete(aluno.getId()));
+        Assertions.assertEquals("Aluno não foi encontrado", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Deve alterar o nome do aluno")
+    void deveAlterarONomeDoAluno() throws Exception {
+        Mockito.when(alunoRepository.findById(anyLong())).thenReturn(Optional.of(aluno));
+        Mockito.when(alunoRepository.save(any())).thenReturn(aluno);
+
+        var resultado = alunoService.alterarAluno(aluno.getId(), "Naldo");
+
+        Assertions.assertEquals("Naldo", resultado.getNome());
+    }
+
+    @Test
+    @DisplayName("Deve apresentar erro quando não for encontrado para alteração")
+    void deveApresentarErroQuandoNaoForEncontradoParaAlteracao(){
+        Exception exception = Assertions.assertThrows(Exception.class,
+                () -> alunoService.alterarAluno(aluno.getId(), "Naldo"));
+        Assertions.assertEquals("Aluno não foi encontrado", exception.getMessage());
     }
 
 
